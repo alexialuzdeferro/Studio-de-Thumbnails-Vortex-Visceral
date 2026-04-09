@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vortex Visceral | Thumbnail Engine</title>
+    <link rel="icon" type="image/png" href="https://raw.githubusercontent.com/pombagiras/melusine/refs/heads/main/Al%C3%AA%20(3)%20(3)%20(1).png">
+    
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;1,400&family=Cinzel:wght@400;700&family=UnifrakturMaguntia&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --bg: #030303;
+            --accent: #8b0000; /* Vermelho Sangue */
+            --iron: #434343; /* Cinza Ferro */
+            --gold: #c5a059;
+            --glass: rgba(15, 15, 15, 0.85);
+            --text-gray: #b0b0b0;
+        }
+
+        body {
+            font-family: 'Playfair Display', serif;
+            background-color: var(--bg);
+            background-image: radial-gradient(circle at center, #1a0505 0%, #030303 100%);
+            color: #e0e0e0;
+            margin: 0;
+            padding: 10px;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .app-container {
+            width: 100%;
+            max-width: 900px;
+            animation: fadeIn 1.5s ease-out;
+        }
+
+        header {
+            text-align: center;
+            padding: 20px 0;
+            border-bottom: 1px solid var(--accent);
+            margin-bottom: 20px;
+        }
+
+        header h1 {
+            font-family: 'Cinzel', serif;
+            font-size: 1.8rem;
+            letter-spacing: 4px;
+            color: var(--gold);
+            margin: 0;
+            text-shadow: 0 0 10px rgba(197, 160, 89, 0.3);
+        }
+
+        /* Accordion Moderno */
+        .section {
+            background: var(--glass);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.05);
+            margin-bottom: 15px;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+
+        .section-header {
+            padding: 20px;
+            cursor: pointer;
+            background: rgba(255,255,255,0.02);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-family: 'Cinzel', serif;
+            font-weight: bold;
+            transition: 0.3s;
+        }
+
+        .section-header:hover { background: rgba(139, 0, 0, 0.1); }
+        .section-header .arrow { transition: transform 0.3s; }
+        .section.active .section-header .arrow { transform: rotate(180deg); }
+
+        .section-content {
+            padding: 20px;
+            display: none;
+            flex-direction: column;
+            gap: 20px;
+            border-top: 1px solid rgba(255,255,255,0.03);
+        }
+
+        .section.active .section-content { display: flex; animation: slideDown 0.4s ease; }
+
+        /* Controles e Customização */
+        .controls-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 15px;
+        }
+
+        input, button, select {
+            width: 100%;
+            padding: 18px;
+            border-radius: 8px;
+            box-sizing: border-box;
+            outline: none;
+            font-size: 1rem;
+        }
+
+        input[type="text"] {
+            background: rgba(0,0,0,0.5);
+            border: 1px solid var(--iron);
+            color: #fff;
+            transition: 0.3s;
+        }
+        input[type="text"]:focus { border-color: var(--accent); box-shadow: 0 0 10px rgba(139,0,0,0.3); }
+
+        /* Estilo dos Seletores Dinâmicos (Mobile-Friendly) */
+        select {
+            background: #111;
+            border: 1px solid var(--iron);
+            color: var(--gold);
+            appearance: none; /* Esconde a seta padrão */
+            background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23c5a059%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.3c0%204.9%201.8%209.2%205.4%2012.8l128.1%20128.1c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095.1c3.6-3.6%205.4-7.8%205.4-12.8%200-5-1.8-9.3-5.4-12.9z%22%3E%3C%2path%3E%3C%2Fsvg%3E');
+            background-repeat: no-repeat;
+            background-position: right 15px top 50%;
+            background-size: 12px auto;
+        }
+
+        .btn-main {
+            background: linear-gradient(135deg, var(--accent) 0%, #300000 100%);
+            color: #fff;
+            border: none;
+            font-family: 'Cinzel', serif;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.4);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+        .btn-main:active { transform: scale(0.98); }
+
+        /* Preview Canvas */
+        #canvas-wrapper {
+            background: #000;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 0 40px rgba(0,0,0,0.8);
+            border: 1px solid #222;
+        }
+        canvas { width: 100%; height: auto; display: block; }
+
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes slideDown { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-thumb { background: var(--accent); }
+
+        @media (min-width: 600px) {
+            .controls-grid { grid-template-columns: 1fr 1fr; }
+            input[type="text"] { grid-column: span 2; }
+            .btn-main { grid-column: span 2; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="app-container">
+    <header>
+        <h1>VORTEX VISCERAL</h1>
+        <small style="color: var(--iron); letter-spacing: 2px;">ESTÉTICA ADAPTATIVA v4.0</small>
+    </header>
+
+    <div class="section active" id="inputSection">
+        <div class="section-header" onclick="toggleSection('inputSection')">
+            <span>01. ELEMENTOS RITUALÍSTICOS</span>
+            <span class="arrow">▼</span>
+        </div>
+        <div class="section-content">
+            <div style="font-size: 0.9rem; color: var(--gold); letter-spacing: 1px;">➜ Passo 1: Imagem Base</div>
+            <input type="file" id="imageInput" accept="image/*">
+            
+            <div style="font-size: 0.9rem; color: var(--gold); letter-spacing: 1px; margin-top: 10px;">➜ Passo 2: Frase de Impacto</div>
+            <input type="text" id="thumbText" placeholder="Ex: O Abismo te Olhou...">
+
+            <div style="font-size: 0.9rem; color: var(--gold); letter-spacing: 1px; margin-top: 10px;">➜ Passo 3: Customização Estética</div>
+            <div class="controls-grid">
+                <select id="fontSelect">
+                    <option value="'Playfair Display'">A Ocultista (Séria)</option>
+                    <option value="'Cinzel'">A Brutalista (Épica)</option>
+                    <option value="'UnifrakturMaguntia'">A Sombria (Gótica)</option>
+                </select>
+                
+                <select id="colorSelect">
+                    <option value="#FFFFFF">Cor: Branco Etéreo</option>
+                    <option value="#c5a059">Cor: Ouro Velho</option>
+                    <option value="#8b0000">Cor: Vermelho Ritual</option>
+                </select>
+            </div>
+
+            <button class="btn-main" onclick="processEngine()">TRANSFORMAR & GERAR</button>
+        </div>
+    </div>
+
+    <div class="section" id="outputSection">
+        <div class="section-header" onclick="toggleSection('outputSection')">
+            <span>02. RESULTADO VISCERAL</span>
+            <span class="arrow">▼</span>
+        </div>
+        <div class="section-content">
+            <div id="canvas-wrapper">
+                <canvas id="mainCanvas" width="1280" height="720"></canvas>
+            </div>
+            <button class="btn-main" onclick="saveImage()" style="background: #1a5e1a; margin-top: 10px;">DESCARREGAR ARQUIVO (JPG)</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    const canvas = document.getElementById('mainCanvas');
+    const ctx = canvas.getContext('2d');
+
+    function triggerHaptic() {
+        if (navigator.vibrate) navigator.vibrate(40); // Feedback tátil (40ms)
+    }
+
+    function toggleSection(id) {
+        triggerHaptic();
+        document.getElementById(id).classList.toggle('active');
+    }
+
+    function processEngine() {
+        triggerHaptic();
+        const file = document.getElementById('imageInput').files[0];
+        const rawText = document.getElementById('thumbText').value; // Respeitando Minúsculas
+
+        if (!file) return alert("Alexia, por favor, insira uma imagem para começar.");
+
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const img = new Image();
+            img.onload = function() {
+                // 1. Renderização Base (1280x720 Cover)
+                const scale = Math.max(1280 / img.width, 720 / img.height);
+                const x = (1280 / 2) - (img.width / 2) * scale;
+                const y = (720 / 2) - (img.height / 2) * scale;
+                
+                ctx.clearRect(0, 0, 1280, 720);
+                ctx.drawImage(img, x, y, img.width * scale, img.height * scale);
+
+                // 2. Filtro Cinematográfico (Vinheta Suave nas bordas)
+                const gradient = ctx.createRadialGradient(640, 360, 200, 640, 360, 800);
+                gradient.addColorStop(0, "transparent");
+                gradient.addColorStop(1, "rgba(0,0,0,0.6)");
+                ctx.fillStyle = gradient;
+                ctx.fillRect(0, 0, 1280, 720);
+
+                // 3. Obter Configurações Estéticas do Usuário
+                const selectedFont = document.getElementById('fontSelect').value;
+                const selectedColor = document.getElementById('colorSelect').value;
+
+                // 4. Configuração de Texto Dinâmico
+                ctx.textAlign = "center";
+                ctx.textBaseline = "middle"; // Centralização vertical perfeita
+                
+                // Ajuste de tamanho baseado na fonte (Gótica precisa ser um pouco maior)
+                const baseSize = selectedFont.includes('UnifrakturMaguntia') ? 110 : 95;
+                ctx.font = `bold ${baseSize}px ${selectedFont}`;
+
+                // 5. O SEGREDO: Sombreamento Inteligente (Halo/Stroke)
+                // Criamos um halo escuro *atrás* do texto para destacar qualquer cor
+                ctx.strokeStyle = "rgba(0,0,0,0.85)";
+                ctx.lineWidth = 10; // Espessura do Halo
+                ctx.lineJoin = "round"; // Bordas suaves
+                
+                // ShadowBlur adicional para suavizar o Halo
+                ctx.shadowColor = "black";
+                ctx.shadowBlur = 20;
+
+                // 6. Processamento de Texto e Quebra de Linha
+                const words = rawText.split(' ');
+                let line = '';
+                const lines = [];
+                const maxWidth = 1100;
+                
+                for(let n = 0; n < words.length; n++) {
+                    let testLine = line + words[n] + ' ';
+                    if (ctx.measureText(testLine).width > maxWidth && n > 0) {
+                        lines.push(line.trim());
+                        line = words[n] + ' ';
+                    } else {
+                        line = testLine;
+                    }
+                }
+                lines.push(line.trim());
+
+                // Cálculo de Posição Y Centralizada Dinâmica
+                const lineHeight = baseSize * 1.1;
+                const totalHeight = lines.length * lineHeight;
+                let currentY = 360 - (totalHeight / 2) + (lineHeight / 2);
+
+                // 7. Desenhar Texto (Primeiro o Halo, depois o Preenchimento)
+                lines.forEach(l => {
+                    // Desenha o Halo (Contorno)
+                    ctx.strokeText(l, 640, currentY);
+                    
+                    // Reseta sombra para o preenchimento ser "limpo"
+                    ctx.shadowColor = "transparent";
+                    ctx.shadowBlur = 0;
+                    ctx.fillStyle = selectedColor;
+                    
+                    // Desenha o Preenchimento (Cor Selecionada)
+                    ctx.fillText(l, 640, currentY);
+                    
+                    // Reativa sombra para o próximo strokeText, se houver
+                    ctx.shadowColor = "black";
+                    ctx.shadowBlur = 20;
+                    
+                    currentY += lineHeight;
+                });
+
+                // 8. Assinatura Profissional e Elegante
+                ctx.shadowColor = "rgba(0,0,0,0.5)";
+                ctx.shadowBlur = 5;
+                ctx.fillStyle = "#fff";
+                ctx.font = "italic 26px 'Playfair Display'";
+                ctx.textAlign = "right";
+                ctx.globalAlpha = 0.8;
+                ctx.fillText("By; Alexia Melusine", 1240, 685);
+                ctx.globalAlpha = 1.0;
+
+                // Troca de seção automática (Mobile UX)
+                document.getElementById('outputSection').classList.add('active');
+                document.getElementById('inputSection').classList.remove('active');
+            }
+            img.src = e.target.result;
+        }
+        reader.readAsDataURL(file);
+    }
+
+    function saveImage() {
+        triggerHaptic();
+        const link = document.createElement('a');
+        link.download = `Vortex_Thumb_${Date.now()}.jpg`;
+        // JPG de Alta Qualidade (0.92)
+        link.href = canvas.toDataURL('image/jpeg', 0.92);
+        link.click();
+    }
+</script>
+
+</body>
+</html>
